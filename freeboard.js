@@ -51,17 +51,24 @@ module.exports = function(RED) {
   var nodes = [];
   function Freeboard(n) {
     RED.nodes.createNode(this, n);
+    var self      = this;
 
-    var self    = this;
-    this.name   = n.name.trim();
-    nodes.push(this);
+    self.name     = n.name.trim();
+    self.attrname = (n.attrname || '').trim();
 
-    this.on("input", function(msg) {
-      self.lastValue = msg.payload;
+    nodes.push(self);
+
+    self.on("input", function(msg) {
+      if (self.attrname) {
+        self.lastValue = msg[self.attrname];
+      } else {
+        self.lastValue = msg;
+      }
+
       postValue(self.id, self.lastValue);
     });
 
-    this.on("close",function() {
+    self.on("close",function() {
       var index = nodes.indexOf(self);
       if (index > -1) {
         nodes.splice(index, 1);
